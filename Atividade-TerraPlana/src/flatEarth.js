@@ -12,7 +12,7 @@ scene.background = new THREE.Color(0x02040d);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 7, 22);
-camera.lookAt(0, 1, 0); 
+camera.lookAt(0, 1, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true }); 
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -258,20 +258,20 @@ function criarTexturaTerra() {
 // ─── A TERRA PLANA ────────────────────────────────────────
 const raioTerra = 9;
 
-const geometryDisco = new THREE.CircleGeometry(raioTerra, 128);
+const geometryDisco = new THREE.CircleGeometry(raioTerra, 128); // parametros: raio, segmentos (quanto mais, mais suave fica a borda do disco)
 const materialDisco = new THREE.MeshLambertMaterial({ map: criarTexturaTerra() });
 const terraDisco = new THREE.Mesh(geometryDisco, materialDisco);
 terraDisco.rotation.x = -Math.PI / 2; // Deixa a face superior do disco voltada para cima.
 terraDisco.receiveShadow = true; 
 scene.add(terraDisco);
 
-const geometryBorda = new THREE.CylinderGeometry(raioTerra, raioTerra, 0.6, 128, 1, true);
-const materialBorda = new THREE.MeshStandardMaterial({ color: 0x0a1f33, roughness: 0.7, metalness: 0.2 });
-const bordaLateral = new THREE.Mesh(geometryBorda, materialBorda);
+const geometryBorda = new THREE.CylinderGeometry(raioTerra, raioTerra, 0.6, 128, 1, true); // parâmetros: raio superior, raio inferior, altura, segmentos radiais, segmentos de altura, aberto (true para não fechar as tampas)
+const materialBorda = new THREE.MeshStandardMaterial({ color: 0x0a1f33, roughness: 0.7, metalness: 0.2 }); //parametros: cor, rugosidade (0 = superfície lisa, 1 = superfície áspera), metalicidade (0 = não metálico, 1 = metálico)
+const bordaLateral = new THREE.Mesh(geometryBorda, materialBorda); // Cria a borda lateral do disco usando uma geometria de cilindro com as tampas abertas para formar uma "parede" circular.
 bordaLateral.position.y = -0.3; 
 scene.add(bordaLateral);
 
-const geometryBase = new THREE.CircleGeometry(raioTerra, 128);
+const geometryBase = new THREE.CircleGeometry(raioTerra, 128); // parâmetros: raio, segmentos (quanto mais, mais suave fica a borda do disco)
 const materialBase = new THREE.MeshBasicMaterial({ color: 0x081c2c });
 const baseInferior = new THREE.Mesh(geometryBase, materialBase);
 baseInferior.rotation.x = Math.PI / 2; 
