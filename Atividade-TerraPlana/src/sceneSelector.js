@@ -11,7 +11,7 @@ const MODELOS = {
   },
   earth: {
     nome: 'Earth',
-    importer: () => import('./Earth.js')
+    importer: () => import('./earth.js')
   }
 };
 
