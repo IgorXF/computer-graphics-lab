@@ -1,33 +1,31 @@
-
 import './style.css'; 
-import * as THREE from 'three';
+import * as THREE from 'three'; 
 
-// criação de uma cena
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
-// ─── FUNDO ESTRELADO ──────────────────────────────────────
-const starGeometry = new THREE.BufferGeometry();
-const starPositions = new Float32Array(5000 * 3);
-for (let i = 0; i < starPositions.length; i++) {
-  starPositions[i] = (Math.random() - 0.5) * 300;
+const scene = new THREE.Scene(); 
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); //campo de visão, proporção da tela, e distância mínima e máxima de visão
+const renderer = new THREE.WebGLRenderer({ antialias: true }); //renderizador para desenhar a imagem
+renderer.setSize(window.innerWidth, window.innerHeight); //ocupa o tamanho exato da janela do navegador
+document.body.appendChild(renderer.domElement); 
+
+//fundo com estrelas
+const estrelaGeometry = new THREE.BufferGeometry(); //Buffer para carregar muitos dados de uma vez
+const starPositions = new Float32Array(5000 * 3); 
+for (let i = 0; i < starPositions.length; i++) { 
+  starPositions[i] = (Math.random() - 0.5) * 300; 
 }
-starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12 });
-const estrelas = new THREE.Points(starGeometry, starMaterial);
-scene.add(estrelas);
+estrelaGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3)); //coloca no Buffer os numeros aleatorios
+const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12 }); 
+const estrelas = new THREE.Points(estrelaGeometry, starMaterial); 
+scene.add(estrelas); 
 
-// ─── TEXTURA DO SOL (canvas procedural) ───────────────────
+//Textura do Sol
 function criarTexturaSol() {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  // gradiente de base — centro branco-quente até vermelho escuro nas bordas
   const gradBase = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
   gradBase.addColorStop(0.00, '#fffde4');
   gradBase.addColorStop(0.15, '#ffe566');
@@ -37,7 +35,6 @@ function criarTexturaSol() {
   ctx.fillStyle = gradBase;
   ctx.fillRect(0, 0, 512, 512);
 
-  // manchas solares e cintilações procedurais
   for (let i = 0; i < 350; i++) {
     const x = Math.random() * 512;
     const y = Math.random() * 512;
@@ -55,27 +52,24 @@ function criarTexturaSol() {
   return new THREE.CanvasTexture(canvas);
 }
 
-// ─── TEXTURA DA TERRA (canvas procedural) ─────────────────
+//Textura da Terra
 function criarTexturaTerra() {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  // oceano base
   ctx.fillStyle = '#1a4f8a';
   ctx.fillRect(0, 0, 512, 512);
 
-  // continentes — formas orgânicas procedurais
   const continentes = [
-    // [cx, cy, rx, ry, rotação, cor]
-    [160, 180,  80, 55,  0.3,  '#4a7c3f'], // América do Norte
-    [175, 290,  45, 65,  0.1,  '#5a8a40'], // América do Sul
-    [290, 160,  70, 50, -0.2,  '#6b8c45'], // Europa / África topo
-    [310, 250,  55, 80,  0.0,  '#5e7a38'], // África
-    [380, 170,  75, 55,  0.4,  '#7a9a50'], // Ásia
-    [415, 280,  40, 30,  0.2,  '#6b8c45'], // Oceania
-    [105, 460,  60, 25,  0.5,  '#8aaa60'], // Antártida (topo)
+    [160, 180,  80, 55,  0.3,  '#4a7c3f'], 
+    [175, 290,  45, 65,  0.1,  '#5a8a40'], 
+    [290, 160,  70, 50, -0.2,  '#6b8c45'], 
+    [310, 250,  55, 80,  0.0,  '#5e7a38'], 
+    [380, 170,  75, 55,  0.4,  '#7a9a50'], 
+    [415, 280,  40, 30,  0.2,  '#6b8c45'], 
+    [105, 460,  60, 25,  0.5,  '#8aaa60'], 
   ];
 
   continentes.forEach(([cx, cy, rx, ry, rot, cor]) => {
@@ -83,19 +77,16 @@ function criarTexturaTerra() {
     ctx.translate(cx, cy);
     ctx.rotate(rot);
 
-    // sombra / costa
     ctx.beginPath();
     ctx.ellipse(3, 3, rx + 4, ry + 4, 0, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.fill();
 
-    // terra principal
     ctx.beginPath();
     ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
     ctx.fillStyle = cor;
     ctx.fill();
 
-    // relevo interno — manchas mais escuras
     for (let i = 0; i < 18; i++) {
       const bx = (Math.random() - 0.5) * rx * 1.4;
       const by = (Math.random() - 0.5) * ry * 1.4;
@@ -107,7 +98,6 @@ function criarTexturaTerra() {
       ctx.fill();
     }
 
-    // neve / vegetação mais clara nas bordas superiores
     ctx.beginPath();
     ctx.ellipse(0, -ry * 0.55, rx * 0.5, ry * 0.22, 0, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(220, 240, 200, 0.25)';
@@ -116,7 +106,6 @@ function criarTexturaTerra() {
     ctx.restore();
   });
 
-  // nuvens procedurais sobre o oceano e continentes
   ctx.globalAlpha = 0.55;
   for (let i = 0; i < 80; i++) {
     const cx = Math.random() * 512;
@@ -132,7 +121,6 @@ function criarTexturaTerra() {
   }
   ctx.globalAlpha = 1.0;
 
-  // calotas polares
   const gradNorte = ctx.createRadialGradient(256, 0, 0, 256, 0, 80);
   gradNorte.addColorStop(0, 'rgba(240, 248, 255, 0.95)');
   gradNorte.addColorStop(1, 'rgba(200, 230, 255, 0)');
@@ -148,13 +136,14 @@ function criarTexturaTerra() {
   return new THREE.CanvasTexture(canvas);
 }
 
-// ─── SOL ──────────────────────────────────────────────────
-const geometrySol = new THREE.SphereGeometry(0.5, 64, 64);
-const materialSol = new THREE.MeshBasicMaterial({ map: criarTexturaSol() });
-const sol = new THREE.Mesh(geometrySol, materialSol);
-scene.add(sol);
 
-// halo do Sol (sprite procedural)
+//cria o sol
+const geometrySol = new THREE.SphereGeometry(0.7, 64, 64); 
+const materialSol = new THREE.MeshBasicMaterial({ map: criarTexturaSol() }); 
+const sol = new THREE.Mesh(geometrySol, materialSol); 
+scene.add(sol); 
+
+//efeito de luz em volta do sol
 const canvasGlow = document.createElement('canvas');
 canvasGlow.width = canvasGlow.height = 128;
 const ctxGlow = canvasGlow.getContext('2d');
@@ -167,79 +156,79 @@ ctxGlow.fillRect(0, 0, 128, 128);
 const halo = new THREE.Sprite(
   new THREE.SpriteMaterial({
     map: new THREE.CanvasTexture(canvasGlow),
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
+    transparent: true, 
+    blending: THREE.AdditiveBlending, 
+    depthWrite: false, 
   })
 );
-halo.scale.set(2.8, 2.8, 1);
-sol.add(halo);
+halo.scale.set(2.8, 2.8, 1); 
+sol.add(halo); 
 
-// ─── ILUMINAÇÃO ───────────────────────────────────────────
-const luzSol = new THREE.PointLight(0xfff4cc, 3.0, 80);
-scene.add(luzSol);
-const luzAmbiente = new THREE.AmbientLight(0x111122, 1.0);
-scene.add(luzAmbiente);
 
-// ─── A TERRA ──────────────────────────────────────────────
-const geometryTerra = new THREE.SphereGeometry(0.2, 64, 64);
-const materialTerra = new THREE.MeshPhongMaterial({
-  map: criarTexturaTerra(),
-  specular: new THREE.Color(0x226688),
-  shininess: 40,
-});
-const terra = new THREE.Mesh(geometryTerra, materialTerra);
-scene.add(terra);
+//iluminação que o sol faz na Terra
+const luzSol = new THREE.PointLight(0xfff4cc, 3.0, 80); //cor, intensidade e alcance
+scene.add(luzSol); 
 
-// ─── LINHA DE ÓRBITA ──────────────────────────────────────
-const raioOrbita = 2.5;
-const pontosOrbita = [];
-for (let i = 0; i <= 256; i++) {
-  const angulo = (i / 256) * Math.PI * 2;
-  pontosOrbita.push(new THREE.Vector3(
-    Math.cos(angulo) * raioOrbita,
-    0,
-    Math.sin(angulo) * raioOrbita
-  ));
+//ilimunação na parte escura da terra 
+const luzAmbiente = new THREE.AmbientLight(0x111122, 1.0); 
+scene.add(luzAmbiente); 
+
+
+//cria a Terra
+const geometryTerra = new THREE.SphereGeometry(0.2, 64, 64); 
+const materialTerra = new THREE.MeshPhongMaterial({ map: criarTexturaTerra() });
+const terra = new THREE.Mesh(geometryTerra, materialTerra); 
+scene.add(terra); 
+
+//linha de órbita formada por varios pontos
+const raioOrbita = 2.5; 
+const pontosOrbita = []; 
+for (let i = 0; i <= 256; i++) { 
+  const angulo = (i / 256) * Math.PI * 2; 
+  pontosOrbita.push(new THREE.Vector3(Math.cos(angulo) * raioOrbita, 0, Math.sin(angulo) * raioOrbita));
 }
-const linhaOrbita = new THREE.Line(
+const linhaOrbita = new THREE.Line( //conecta os pontos numa linha
   new THREE.BufferGeometry().setFromPoints(pontosOrbita),
   new THREE.LineBasicMaterial({ color: 0x88aacc, opacity: 0.3, transparent: true })
 );
-scene.add(linhaOrbita);
+scene.add(linhaOrbita); 
 
-// ─── POSIÇÕES DA CÂMERA ───────────────────────────────────
-camera.position.x = 2.2;
-camera.position.y = 3;
-camera.position.z = 2.2;
-camera.lookAt(0, 0, 0);
+//posições da câmera
+camera.position.x = 0; 
+camera.position.y = 3;   
+camera.position.z = 4; 
+camera.lookAt(0, 0, 0);  
 
-// ─── VARIÁVEIS PARA CONTROLAR AS TRANSFORMAÇÕES GEOMÉTRICAS ──────────
-let anguloTranslacao = 0;
-const velocidadeTranslacao = 0.01;
-const velocidadeRotacao = 0.005;
+//variáveis para controlar as transformações lineares
+let anguloTranslacao = 0; 
+const velocidadeTranslacaoTerra = 0.01; 
+const velocidadeRotacaoTerra = 0.005; 
+const velocidadeRotacaoSol = 0.002;
 
+
+//loop principal de animação que roda 60 vezes por segundo sem parar
 function animate() {
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animate); 
 
-  // 1. ROTAÇÃO
-  sol.rotation.y   += 0.002;           // rotação lenta do Sol no próprio eixo
-  terra.rotation.y += velocidadeRotacao; // a Terra rotaciona em torno do próprio eixo Y
+  //rotação
+  sol.rotation.y   += velocidadeRotacaoSol;           
+  terra.rotation.y += velocidadeRotacaoTerra; 
 
-  // 2. TRANSLAÇÃO
-  // Atualizamos as coordenadas X e Z no espaço para descrever um movimento circular
-  // (aplicando as fórmulas paramétricas do círculo)
-  anguloTranslacao += velocidadeTranslacao;
-  terra.position.x = Math.cos(anguloTranslacao) * raioOrbita;
-  terra.position.z = Math.sin(anguloTranslacao) * raioOrbita;
+  //translação
+  anguloTranslacao += velocidadeTranslacaoTerra; //angulo aumenta a cada frame
+  //atualiza X e Z para ter o movimento circular em volta do sol
+  terra.position.x = Math.cos(anguloTranslacao) * raioOrbita; //posição horizontal
+  terra.position.z = Math.sin(anguloTranslacao) * raioOrbita; //profundidade
 
   renderer.render(scene, camera);
 }
-animate();
 
-// ─── REDIMENSIONAMENTO ────────────────────────────────────
+animate(); 
+
+
+//responsividade na tela ao maximizar ou redimensionar a tela 
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight; 
+  camera.updateProjectionMatrix(); 
+  renderer.setSize(window.innerWidth, window.innerHeight); 
 });
